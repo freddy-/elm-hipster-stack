@@ -6,6 +6,7 @@ import GraphQL.Request.Builder.Arg as Arg
 import GraphQL.Request.Builder.Variable as Var
 import GraphQL.Client.Http as GraphQLClient
 import Task exposing (Task)
+import Array
 
 
 sendQueryRequest : Request Query a -> Task GraphQLClient.Error a
@@ -94,10 +95,28 @@ deletePostRequest postId =
                 { id = Result.withDefault 0 (String.toInt postId) }
 
 
+deleteAllPostsRequest : Request Mutation Int
+deleteAllPostsRequest =
+    extract
+        (field "deleteAll"
+            []
+            (extract (field "qtd" [] int))
+        )
+        |> mutationDocument
+        |> request
+            {}
+
+
 sendDeletePostMutation : PostId -> Cmd Msg
 sendDeletePostMutation postId =
     sendMutationRequest (deletePostRequest postId)
         |> Task.attempt ReceieveDeleteMutationResponse
+
+
+sendDeleteAllPostsMutation : Cmd Msg
+sendDeleteAllPostsMutation =
+    sendMutationRequest deleteAllPostsRequest
+        |> Task.attempt ReceieveDeleteAllMutationResponse
 
 
 initialModel : Model
@@ -105,6 +124,7 @@ initialModel =
     { posts = []
     , openedPost = Nothing
     , newPost = Nothing
+    , postsApagados = 0
     }
 
 
@@ -155,6 +175,18 @@ update msg model =
                             Debug.log "Delete mutation failed!" model.posts
             in
                 ( { model | posts = posts1 }, Cmd.none )
+
+        ReceieveDeleteAllMutationResponse deleteAllResponse ->
+            let
+                qtdPostsRemovidos =
+                    case deleteAllResponse of
+                        Ok qtdPosts ->
+                            qtdPosts
+
+                        Err err ->
+                            Debug.log (toString err) model.postsApagados
+            in
+                ( { model | posts = [], postsApagados = qtdPostsRemovidos }, Cmd.none )
 
         OpenCreateView ->
             ( { model | newPost = Just (NewPost "" "") }
@@ -225,6 +257,18 @@ update msg model =
             ( { model | openedPost = Nothing, newPost = Nothing }
             , Cmd.none
             )
+
+        DeleteAllPosts ->
+            let
+                contemPosts =
+                    List.isEmpty model.posts
+            in
+                ( model
+                , if contemPosts == False then
+                    sendDeleteAllPostsMutation
+                  else
+                    Cmd.none
+                )
 
 
 subscriptions : Model -> Sub Msg

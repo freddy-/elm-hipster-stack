@@ -30,4 +30,8 @@ defmodule AppWeb.PostResolver do
     Repo.delete(post)
   end
 
+  def delete_all(_, _) do
+    {:ok, %{qtd: elem(Repo.delete_all(Post), 0)}}
+  end
+
 end

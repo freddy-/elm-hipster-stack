@@ -8,6 +8,7 @@ type Msg
     = ReceiveQueryResponse PostsResponse
     | ReceiveCreateMutationResponse PostResponse
     | ReceieveDeleteMutationResponse DeletePostResponse
+    | ReceieveDeleteAllMutationResponse DeleteAllPostResponse
     | OpenCreateView
     | CreatePost NewPost
     | NewTitleChange String
@@ -15,6 +16,7 @@ type Msg
     | DeletePost PostId
     | OpenPost PostId
     | ClosePost
+    | DeleteAllPosts
 
 
 type alias PostsResponse =
@@ -29,6 +31,10 @@ type alias DeletePostResponse =
     Result GraphQLClient.Error PostId
 
 
+type alias DeleteAllPostResponse =
+    Result GraphQLClient.Error Int
+
+
 type alias PostId =
     String
 
@@ -37,6 +43,7 @@ type alias Model =
     { posts : List Post
     , openedPost : Maybe Post
     , newPost : Maybe NewPost
+    , postsApagados : Int
     }
 
 

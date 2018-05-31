@@ -65,7 +65,7 @@ list posts =
 
 
 {-| We need to use Html.Keyed.node here because otherwise the select
-    event when pressing remove on items will bug.
+event when pressing remove on items will bug.
 -}
 postRow : Post -> Html Msg
 postRow post =
@@ -76,7 +76,9 @@ postRow post =
                     [ ( "margin", "5px" )
                     ]
                 ]
-                [ text post.title ]
+                [ span [ style [ ( "margin", "5px" ) ] ] [ text post.id ]
+                , text post.title
+                ]
 
         rowRemoveButton =
             button
@@ -120,6 +122,17 @@ newPostButton =
         , onClick OpenCreateView
         ]
         [ text "New Post" ]
+
+
+deleteAllButton : Bool -> Html Msg
+deleteAllButton contemPosts =
+    button
+        [ class "btn btn-danger"
+        , style [ ( "margin", "10px" ) ]
+        , disabled contemPosts
+        , onClick DeleteAllPosts
+        ]
+        [ text "Delete All Posts" ]
 
 
 openDialog : Maybe Post -> Html Msg
@@ -242,7 +255,15 @@ root model =
         [ bootstrap
         , header
         , list model.posts
-        , newPostButton
+        , div []
+            [ newPostButton
+
+            -- deleteAllButton é uma function que recebe um argumento boleano
+            -- os parenteses em volta do isempty faz com que seja executado e
+            -- o resultado passado pra deleteallbutton
+            , deleteAllButton (List.isEmpty model.posts)
+            , text (toString model.postsApagados)
+            ]
         , openDialog model.openedPost
         , createDialog model.newPost
         ]

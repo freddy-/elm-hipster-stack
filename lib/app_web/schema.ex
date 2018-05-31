@@ -18,6 +18,10 @@ defmodule AppWeb.Schema do
     field :body, non_null(:string)
   end
 
+  object :delete_all_result do
+    field :qtd, :integer
+  end
+
   mutation do
     field :create_post, type: :post do
       arg :title, non_null(:string)
@@ -37,6 +41,10 @@ defmodule AppWeb.Schema do
       arg :id, non_null(:integer)
 
       resolve &AppWeb.PostResolver.delete/2
+    end
+
+    field :delete_all, type: :delete_all_result do
+      resolve &AppWeb.PostResolver.delete_all/2
     end
   end
 
