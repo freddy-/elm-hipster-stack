@@ -6,6 +6,7 @@ import GraphQL.Request.Builder.Arg as Arg
 import GraphQL.Request.Builder.Variable as Var
 import GraphQL.Client.Http as GraphQLClient
 import Task exposing (Task)
+import Time exposing (every, second)
 import Array
 
 
@@ -124,7 +125,9 @@ initialModel =
     { posts = []
     , openedPost = Nothing
     , newPost = Nothing
-    , postsApagados = 0
+    , showToast = False
+    , toastTimerCounter = 0
+    , toastMsg = Nothing
     }
 
 
@@ -184,9 +187,15 @@ update msg model =
                             qtdPosts
 
                         Err err ->
-                            Debug.log (toString err) model.postsApagados
+                            Debug.log (toString err) 0
             in
-                ( { model | posts = [], postsApagados = qtdPostsRemovidos }, Cmd.none )
+                ( { model
+                    | posts = []
+                    , showToast = True
+                    , toastMsg = Just ("Posts removidos: " ++ toString(qtdPostsRemovidos))
+                  }
+                , Cmd.none
+                )
 
         OpenCreateView ->
             ( { model | newPost = Just (NewPost "" "") }
@@ -270,7 +279,25 @@ update msg model =
                     Cmd.none
                 )
 
+        TimerTick ->
+            case model.showToast of
+                True ->
+                    ( { model
+                        | toastTimerCounter = model.toastTimerCounter + 1
+                        , showToast =
+                            if model.toastTimerCounter > 2 then
+                                False
+                            else
+                                model.showToast
+                      }
+                    , Cmd.none
+                    )
+
+                False ->
+                    ( { model | toastTimerCounter = 0 }, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.batch
+        [ every second (always TimerTick) ]

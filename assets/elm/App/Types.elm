@@ -17,6 +17,7 @@ type Msg
     | OpenPost PostId
     | ClosePost
     | DeleteAllPosts
+    | TimerTick
 
 
 type alias PostsResponse =
@@ -43,7 +44,9 @@ type alias Model =
     { posts : List Post
     , openedPost : Maybe Post
     , newPost : Maybe NewPost
-    , postsApagados : Int
+    , showToast : Bool
+    , toastTimerCounter : Int
+    , toastMsg : Maybe String
     }
 
 

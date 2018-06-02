@@ -260,10 +260,27 @@ root model =
 
             -- deleteAllButton é uma function que recebe um argumento boleano
             -- os parenteses em volta do isempty faz com que seja executado e
-            -- o resultado passado pra deleteallbutton
+            -- o resultado passado pra demodelleteallbutton
             , deleteAllButton (List.isEmpty model.posts)
-            , text (toString model.postsApagados)
             ]
         , openDialog model.openedPost
         , createDialog model.newPost
+        , div [ class "rodape" ]
+            [ div
+                [ classList
+                    [ ( "slider", True )
+                    , ( "slider-in", model.showToast )
+                    , ( "slider-out", not model.showToast )
+                    ]
+                ]
+                [ text
+                    (case model.toastMsg of
+                        Just value ->
+                            value
+
+                        Nothing ->
+                            ""
+                    )
+                ]
+            ]
         ]
