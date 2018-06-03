@@ -1,6 +1,6 @@
 module App.State exposing (..)
 
-import App.Types exposing (Model, Msg(..), Post, NewPost, PostId)
+import App.Types exposing (Model, Msg(..), Post, NewPost, PostId, Toast)
 import GraphQL.Request.Builder exposing (..)
 import GraphQL.Request.Builder.Arg as Arg
 import GraphQL.Request.Builder.Variable as Var
@@ -120,14 +120,20 @@ sendDeleteAllPostsMutation =
         |> Task.attempt ReceieveDeleteAllMutationResponse
 
 
+initialToastState : Toast
+initialToastState =
+    { showToast = False
+    , toastTimerCounter = 0
+    , toastMsg = Nothing
+    }
+
+
 initialModel : Model
 initialModel =
     { posts = []
     , openedPost = Nothing
     , newPost = Nothing
-    , showToast = False
-    , toastTimerCounter = 0
-    , toastMsg = Nothing
+    , toast = initialToastState
     }
 
 
@@ -188,11 +194,19 @@ update msg model =
 
                         Err err ->
                             Debug.log (toString err) 0
+
+                toast =
+                    model.toast
+
+                newToast =
+                    { toast
+                        | showToast = True
+                        , toastMsg = Just ("Posts removidos: " ++ toString (qtdPostsRemovidos))
+                    }
             in
                 ( { model
                     | posts = []
-                    , showToast = True
-                    , toastMsg = Just ("Posts removidos: " ++ toString(qtdPostsRemovidos))
+                    , toast = newToast
                   }
                 , Cmd.none
                 )
@@ -280,21 +294,26 @@ update msg model =
                 )
 
         TimerTick ->
-            case model.showToast of
-                True ->
-                    ( { model
-                        | toastTimerCounter = model.toastTimerCounter + 1
-                        , showToast =
-                            if model.toastTimerCounter > 2 then
-                                False
-                            else
-                                model.showToast
-                      }
-                    , Cmd.none
-                    )
+            let
+                toast =
+                    model.toast
 
-                False ->
-                    ( { model | toastTimerCounter = 0 }, Cmd.none )
+                newToast =
+                    case toast.showToast of
+                        True ->
+                            { toast
+                                | toastTimerCounter = toast.toastTimerCounter + 1
+                                , showToast =
+                                    if toast.toastTimerCounter > 2 then
+                                        False
+                                    else
+                                        toast.showToast
+                            }
+
+                        False ->
+                            { toast | toastTimerCounter = 0 }
+            in
+                ( { model | toast = newToast }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg

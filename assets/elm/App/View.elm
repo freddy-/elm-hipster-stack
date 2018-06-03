@@ -1,6 +1,6 @@
 module App.View exposing (..)
 
-import App.Types exposing (Model, Post, NewPost, DialogConfig, Msg(..))
+import App.Types exposing (Model, Post, NewPost, DialogConfig, Msg(..), Toast)
 import App.Utils exposing (bootstrap)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -242,6 +242,35 @@ createDialogConfig newPost =
         }
 
 
+toast : Toast -> Html Msg
+toast toast =
+    let
+        msg =
+            case toast.toastMsg of
+                Just value ->
+                    value
+
+                Nothing ->
+                    ""
+
+        shouldSlideIn =
+            toast.showToast && (not (String.isEmpty msg))
+
+        shouldSlideOut =
+            not toast.showToast && (not (String.isEmpty msg))
+    in
+        div [ class "rodape" ]
+            [ div
+                [ classList
+                    [ ( "slider", True )
+                    , ( "slider-in", shouldSlideIn )
+                    , ( "slider-out", shouldSlideOut )
+                    ]
+                ]
+                [ text msg ]
+            ]
+
+
 root : Model -> Html Msg
 root model =
     div
@@ -265,22 +294,5 @@ root model =
             ]
         , openDialog model.openedPost
         , createDialog model.newPost
-        , div [ class "rodape" ]
-            [ div
-                [ classList
-                    [ ( "slider", True )
-                    , ( "slider-in", model.showToast )
-                    , ( "slider-out", not model.showToast )
-                    ]
-                ]
-                [ text
-                    (case model.toastMsg of
-                        Just value ->
-                            value
-
-                        Nothing ->
-                            ""
-                    )
-                ]
-            ]
+        , toast model.toast
         ]

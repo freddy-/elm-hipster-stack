@@ -40,13 +40,18 @@ type alias PostId =
     String
 
 
+type alias Toast =
+    { showToast : Bool
+    , toastTimerCounter : Int
+    , toastMsg : Maybe String
+    }
+
+
 type alias Model =
     { posts : List Post
     , openedPost : Maybe Post
     , newPost : Maybe NewPost
-    , showToast : Bool
-    , toastTimerCounter : Int
-    , toastMsg : Maybe String
+    , toast : Toast
     }
 
 
